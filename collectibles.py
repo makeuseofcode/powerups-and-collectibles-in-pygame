@@ -1,7 +1,7 @@
 import pygame
 import random
 
-# Initialize PyGame
+# Initialize Pygame
 pygame.init()
 
 # Set up the game window
@@ -49,14 +49,8 @@ while running:
         player_x += player_speed
     if keys[pygame.K_UP] :
         player_y -= player_speed
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN] :
         player_y += player_speed
-    
-    # Collision detection with collectible
-    if player_x < collectible_x + collectible_width and player_x + player_width > collectible_x and player_y < collectible_y + collectible_height and player_y + player_height > collectible_y:
-        collectible_x = random.randint(0, window_width - collectible_width)
-        collectible_y = 50
-        score += 10
 
     # Enemy movement
     enemy_y += enemy_speed
@@ -65,20 +59,39 @@ while running:
         enemy_y = 0
 
     # Collision detection
-    if player_x < enemy_x + enemy_width and player_x + player_width > enemy_x and player_y < enemy_y + enemy_height and player_y + player_height > enemy_y:
+    if (player_x < enemy_x + enemy_width) and \
+        (player_x + player_width > enemy_x) and \
+        (player_y < enemy_y + enemy_height) and \
+        (player_y + player_height > enemy_y):
         running = False
+    
+    # Collision detection with collectible
+    if (player_x < collectible_x + collectible_width) and \
+                        (player_x + player_width > collectible_x) and \
+                        (player_y < collectible_y + collectible_height) and \
+                        (player_y + player_height > collectible_y):
+        collectible_x = random.randint(0, window_width - collectible_width)
+        collectible_y = 50
+        score += 10
 
     # Clear the screen
     window.fill((0, 0, 0))
 
+    player_pos = (player_x, player_y, 
+                  player_width, player_height)
+    enemy_pos =  (enemy_x, enemy_y, 
+                  enemy_width, enemy_height)
+
     # Draw player
-    pygame.draw.rect(window, (255, 255, 255), (player_x, player_y, player_width, player_height))
+    pygame.draw.rect(window, (255, 255, 255), player_pos)
 
     # Draw enemy
-    pygame.draw.rect(window, (255, 0, 0), (enemy_x, enemy_y, enemy_width, enemy_height))
+    pygame.draw.rect(window, (255, 0, 0), enemy_pos)
 
+    collectible_pos = (collectible_x, collectible_y)
+    
     # Draw collectible
-    pygame.draw.rect(window, (0, 255, 0), (collectible_x, collectible_y, collectible_width, collectible_height))
+    pygame.draw.circle(window, (0, 255, 0), collectible_pos, collectible_width)
 
     # Draw score
     score_text = font.render("Score: " + str(score), True, (255, 255, 255))
