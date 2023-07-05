@@ -1,7 +1,7 @@
 import pygame
 import random
 
-# Initialize PyGame
+# Initialize Pygame
 pygame.init()
 
 # Set up the game window
@@ -30,7 +30,6 @@ collectible_height = 30
 collectible_x = random.randint(0, window_width - collectible_width)
 collectible_y = 50
 
-# Set up power-up
 powerup_width = 40
 powerup_height = 40
 powerup_x = random.randint(0, window_width - powerup_width)
@@ -57,29 +56,8 @@ while running:
         player_x += player_speed
     if keys[pygame.K_UP] :
         player_y -= player_speed
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN] :
         player_y += player_speed
-    
-    # Collision detection with collectible
-    if player_x < collectible_x + collectible_width and player_x + player_width > collectible_x and player_y < collectible_y + collectible_height and player_y + player_height > collectible_y:
-        collectible_x = random.randint(0, window_width - collectible_width)
-        collectible_y = 50
-        score += 10
-    
-    # Collision detection with power-up
-    if player_x < powerup_x + powerup_width and player_x + player_width > powerup_x and player_y < powerup_y + powerup_height and player_y + player_height > powerup_y:
-        powerup_x = random.randint(0, window_width - powerup_width)
-        powerup_y = 50
-        shield_active = True
-        shield_timer = pygame.time.get_ticks()
-
-    # ...
-
-    # Check shield timer
-    if shield_active:
-        current_time = pygame.time.get_ticks()
-        if current_time - shield_timer > 5000:  # 5 seconds (adjust as needed)
-            shield_active = False
 
     # Enemy movement
     enemy_y += enemy_speed
@@ -88,31 +66,80 @@ while running:
         enemy_y = 0
 
     # Collision detection
-    if player_x < enemy_x + enemy_width and player_x + player_width > enemy_x and player_y < enemy_y + enemy_height and player_y + player_height > enemy_y:
+    if (player_x < enemy_x + enemy_width) and \
+        (player_x + player_width > enemy_x) and \
+        (player_y < enemy_y + enemy_height) and \
+        (player_y + player_height > enemy_y):
         if not shield_active:
             running = False
+    
+    # Collision detection with collectible
+    if (player_x < collectible_x + collectible_width) and \
+                        (player_x + player_width > collectible_x) and \
+                        (player_y < collectible_y + collectible_height) and \
+                        (player_y + player_height > collectible_y):
+        collectible_x = random.randint(0, window_width - collectible_width)
+        collectible_y = 50
+        score += 10
+    
+    # Collision detection with power-up
+    collision_powerup = (player_x < powerup_x + powerup_width) and \
+                        (player_x + player_width > powerup_x) and \
+                        (player_y < powerup_y + powerup_height) and \
+                        (player_y + player_height > powerup_y)
+
+    if collision_powerup:
+        powerup_x = random.randint(0, window_width - powerup_width)
+        powerup_y = 50
+        shield_active = True
+        shield_timer = pygame.time.get_ticks()
+    
+    # Check shield timer
+    if shield_active:
+        current_time = pygame.time.get_ticks()
+        if current_time - shield_timer > 10000:  
+            shield_active = False
 
     # Clear the screen
     window.fill((0, 0, 0))
 
+    player_pos = (player_x, player_y, 
+                  player_width, player_height)
+    enemy_pos =  (enemy_x, enemy_y, 
+                  enemy_width, enemy_height)
+
     # Draw player
-    pygame.draw.rect(window, (255, 255, 255), (player_x, player_y, player_width, player_height))
+    pygame.draw.rect(window, (255, 255, 255), player_pos)
 
     # Draw enemy
-    pygame.draw.rect(window, (255, 0, 0), (enemy_x, enemy_y, enemy_width, enemy_height))
+    pygame.draw.rect(window, (255, 0, 0), enemy_pos)
 
-    # Draw collectible
-    pygame.draw.rect(window, (0, 255, 0), (collectible_x, collectible_y, collectible_width, collectible_height))
+    collectible_pos = (collectible_x, collectible_y)
 
-    # Draw power-up
-    pygame.draw.rect(window, (255, 255, 0), (powerup_x, powerup_y, powerup_width, powerup_height))
+    # Define the vertices of the triangle
+    x1 = powerup_x + powerup_width / 2
+    y1 = powerup_y
+    x2 = powerup_x
+    y2 = powerup_y + powerup_height
+    x3 = powerup_x + powerup_width
+    y3 = powerup_y + powerup_height
 
-    # ...
+    # Draw the triangle
+    pygame.draw.polygon(window, (255, 255, 0), [(x1, y1), (x2, y2), (x3, y3)])
 
     # Collision detection with shield active
-    if shield_active and player_x < enemy_x + enemy_width and player_x + player_width > enemy_x and player_y < enemy_y + enemy_height and player_y + player_height > enemy_y:
+    collision_shield = shield_active and \
+                    (player_x < enemy_x + enemy_width) and \
+                    (player_x + player_width > enemy_x) and \
+                    (player_y < enemy_y + enemy_height) and \
+                    (player_y + player_height > enemy_y)
+
+    if collision_shield:
         enemy_x = random.randint(0, window_width - enemy_width)
         enemy_y = 0
+    
+    # Draw collectible
+    pygame.draw.circle(window, (0, 255, 0), collectible_pos, collectible_width)
 
     # Draw score
     score_text = font.render("Score: " + str(score), True, (255, 255, 255))
